@@ -1,0 +1,14 @@
+# Python 3.10+ recommandé
+sentence-transformers>=3.0
+transformers>=4.44
+torch>=2.2
+accelerate>=0.33
+bitsandbytes>=0.43; platform_system != "Darwin"
+faiss-cpu>=1.8
+rank-bm25>=0.2.2
+scikit-learn>=1.4
+pandas>=2.0
+numpy>=1.26
+yara-python>=4.5
+gradio>=4.40
+psutil>=5.9

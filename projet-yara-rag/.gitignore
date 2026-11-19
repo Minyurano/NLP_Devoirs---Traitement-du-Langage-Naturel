@@ -1,0 +1,10 @@
+# Modèles téléchargés et index générés (volumineux, recréés automatiquement)
+embedding_model/
+reranker_model/
+llm_*/
+yara_faiss.index
+yara_bm25.pkl
+yara_docs.pkl
+yara_embeddings.pkl
+yara_index_meta.json
+rag_evaluation.csv

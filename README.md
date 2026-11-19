@@ -1,106 +1,61 @@
-🛡️ YARA RAG System – Génération automatique de règles YARA par RAG et LLM
- Contexte et problématique
-La détection de menaces par des règles YARA reste un art complexe, nécessitant une expertise approfondie des familles de malwares, des signatures hexadécimales et des comportements systèmes. Face à des volumes croissants de fichiers suspects, la rédaction manuelle de règles devient un goulot d’étranglement.
+# Traitement du Langage Naturel (NLP) — Devoirs et projet
 
-Ce projet propose une solution innovante : générer automatiquement des règles YARA à partir d’une simple description textuelle d’un comportement malveillant, en combinant :
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter&logoColor=white)
+![spaCy](https://img.shields.io/badge/spaCy-NLP-09A3D5?logo=spacy&logoColor=white)
+![Hugging Face](https://img.shields.io/badge/Hugging%20Face-Transformers-FFD21E?logo=huggingface&logoColor=black)
+![FAISS](https://img.shields.io/badge/FAISS-Vector%20Search-0467DF)
+![Gradio](https://img.shields.io/badge/Gradio-UI-F97316?logo=gradio&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-Un moteur de recherche RAG hybride (BM25 + FAISS) sur plus de 30 000 règles YARA existantes et validées.
+Travaux réalisés dans le cadre du module **Traitement du Langage Naturel** du Master **Intelligence Artificielle & Sciences des Données (IASD)**, FST de Tanger. Le dépôt suit une progression : du prétraitement de texte classique jusqu'à un système **RAG** (Retrieval-Augmented Generation) complet appliqué à la cybersécurité.
 
-Un modèle de langage (LLM) (TinyLlama / Phi-2 / Mistral-7B) pour synthétiser une nouvelle règle, adaptée au contexte récupéré.
+---
 
-Trois architectures RAG : Hybride (fusion BM25+FAISS), Rerank (avec Cross-Encoder) et Agentic (itérations de correction).
+## Contenu
 
- Objectifs
-Automatiser la création de règles YARA à partir d’un langage naturel.
+| Partie | Sujet | Techniques |
+|---|---|---|
+| [Semaine 1](devoirs/semaine-1-pretraitement/) | Prétraitement de texte en français | Tokenisation spaCy, stopwords, stemming Snowball, TF-IDF |
+| [Semaine 2](devoirs/semaine-2-rag-introduction/) | Premier RAG sur des infractions du Code de la route | Sentence-Transformers, index FAISS, recherche sémantique |
+| [Semaine 3](devoirs/semaine-3-extraction-juridique/) | Extraction d'informations depuis un texte juridique (PDF scanné) | OCR Tesseract, regex, TF-IDF + KMeans, NER spaCy (EntityRuler) |
+| [Semaine 4](devoirs/semaine-4-rag-yara/) | Comparaison d'architectures RAG pour générer des règles YARA | RAG classique, re-ranking, hybride, multi-hop, graph RAG, agentic |
+| [**Projet final**](projet-yara-rag/) | **Génération automatique de règles YARA par RAG + LLM** | BM25 + FAISS, Cross-Encoder, TinyLlama / Phi-2 / Mistral-7B, interface Gradio |
 
-Réduire le temps d’expertise en s’appuyant sur un corpus existant de règles validées.
+Présentation du projet : [`docs/presentation-rag-yara.pptx`](docs/presentation-rag-yara.pptx)
 
-Comparer trois stratégies de RAG (hybride, rerank, agentic) en termes de qualité syntaxique, similarité sémantique et pertinence.
+## Projet final en bref
 
-Fournir une interface interactive (Gradio) pour tester et visualiser les règles générées.
+À partir d'une description en langage naturel d'un comportement malveillant (ex. *« ransomware chiffrant les fichiers avec AES »*), le système retrouve les règles YARA les plus proches parmi ~30 000 règles validées, puis demande à un LLM d'en rédiger une nouvelle. Trois stratégies de récupération sont comparées : **hybride**, **re-ranking** et **agentic**.
+→ Détails, architecture et résultats : [projet-yara-rag/README.md](projet-yara-rag/README.md)
 
- Architecture technique
- 1. Base de connaissances
-Dataset : ~30 000 règles YARA issues de sources publiques, filtrées sur is_valid = True.
+## Structure du dépôt
 
-Colonnes principales : rule_name, description, rule_body, type (malware, ransomware, keylogger…).
+```
+.
+├── projet-yara-rag/                 # Projet final : génération de règles YARA par RAG
+│   ├── yara_rag_system.py           # Code du système (script exécutable)
+│   ├── yara_rag_demo.ipynb          # Notebook d'exécution avec résultats
+│   ├── requirements.txt
+│   └── README.md
+├── devoirs/
+│   ├── semaine-1-pretraitement/
+│   ├── semaine-2-rag-introduction/
+│   ├── semaine-3-extraction-juridique/
+│   └── semaine-4-rag-yara/
+├── docs/
+│   └── presentation-rag-yara.pptx
+├── LICENSE
+└── README.md
+```
 
-Embedding : BAAI/bge-base-en-v1.5 (768 dimensions) pour la recherche sémantique.
+## Exécution des devoirs
 
-Indexation :
+Les notebooks des devoirs ont été exécutés sur Google Colab ou Jupyter ; leurs résultats sont conservés dans les fichiers. Pour les relancer, ouvrir le notebook et exécuter les cellules dans l'ordre (les cellules `!pip install` installent les dépendances nécessaires).
 
-FAISS (cosine similarity) pour la recherche dense.
+## Auteur
 
-BM25 (tokenisation classique) pour la recherche exacte (termes techniques, API, hex patterns).
+**Aloys MINYURANO** — Master IASD, FST de Tanger (Université Abdelmalek Essaâdi)
+[GitHub](https://github.com/Minyurano) · [LinkedIn](https://www.linkedin.com/in/aloys-minyurano-871717402)
 
- 2. Récupération (Retrieval)
-Hybride : fusion linéaire des scores dense (FAISS) et sparse (BM25) avec alpha = 0.6.
-
-Rerank : les 15 premiers candidats sont re‑classés par un Cross‑Encoder (ms-marco-MiniLM-L-6-v2).
-
-Agentic : itère la génération jusqu’à obtenir une règle syntaxiquement valide (max 3 essais).
-
- 3. Génération (LLM)
-LLM par défaut : TinyLlama-1.1B-Chat (compatible CPU, < 2 Go RAM).
-
-Fallback : si RAM < 2.5 Go, bascule sur distilgpt2 (~350 Mo).
-
-Prompting : le contexte fourni contient uniquement les sections strings et condition des règles récupérées (pour guider la syntaxe sans copier).
-
-Post‑traitement : correction des noms de règle, déduplication des chaînes, insertion auto de meta:, équilibrage des accolades.
-
- 4. Évaluation
-Quatre métriques calculées sur 5 requêtes de test (ransomware, keylogger, rootkit, backdoor, cryptominer) :
-
-Métrique	Description
-Syntaxe Valide	Compilation YARA réussie
-Similarité	Cosine entre l’embedding de la règle générée et celui des documents récupérés
-Hallucination	Présence de meta:, de strings, et cohérence condition/strings
-Pertinence Retrieval	Proportion de documents récupérés avec description > 30 caractères et type spécifique
- Interface utilisateur (Gradio)
-L’application permet de :
-
-Saisir une description du malware (ex : “Ransomware encrypting files with AES”).
-
-Choisir l’architecture RAG et le LLM (via menu déroulant).
-
-Générer la règle YARA, avec affichage de la syntaxe valide / invalide.
-
-Consulter les explications ligne à ligne de la règle (via le LLM).
-
-Voir les références (URL des règles sources utilisées).
-
-https://image.png
-
- Résultats comparatifs (extrait)
-Architecture	Syntaxe Valide	Similarité	Hallucination	Pertinence Retrieval	Score Global
-Agentic RAG	0.0	0.716	0.00	0.80	0.575
-RAG Rerank	0.0	0.715	0.06	0.80	0.562
-RAG Hybride	0.0	0.709	0.00	0.72	0.557
-Analyse : bien qu’aucune règle générée ne soit syntaxiquement valide sur ce petit test (en raison de la brièveté des exemples dans le dataset de démonstration), l’architecture Agentic obtient le meilleur score global grâce à une meilleure similarité et une hallucination nulle. Les règles produites sont proches sémantiquement des exemples et présentent une structure correcte (meta, strings, condition). L’utilisation d’un dataset réel plus riche améliorerait la validité syntaxique.
-
- Installation et exécution
-bash
-git clone https://github.com/Minyurano/projet-NLP.git
-cd projet-NLP
-pip install -r requirements.txt   # ou exécutez le notebook
-python yara_rag_system.py
-Dans l’environnement Jupyter / Colab, exécutez simplement toutes les cellules du notebook cool.projet of NLP.ipynb. L’interface Gradio se lance automatiquement sur http://127.0.0.1:7861.
-
- Exemples de requêtes
-Requête	Architecture recommandée
-ransomware encrypt files AES	Hybride
-keylogger GetAsyncKeyState	Rerank
-rootkit SSDT hooking	Agentic
- Structure du dépôt
-text
-projet-NLP/
-├── yara_rag_system.py            # Script principal (ou notebook .ipynb)
-├── yara_step2.csv                # Dataset de règles YARA
-├── embedding_model/              # Modèle BAAI/bge-base-en-v1.5 (caché)
-├── llm_tinyllama/                # TinyLlama-1.1B (caché)
-├── llm_distilgpt2/               # Fallback distilgpt2 (caché)
-├── reranker_model/               # Cross-encoder ms-marco (caché)
-├── yara_faiss.index              # Index FAISS pré‑calculé
-├── yara_bm25.pkl                 # Index BM25 pré‑calculé
-└── README.md                     # Ce fichier
+Distribué sous licence [MIT](LICENSE).
